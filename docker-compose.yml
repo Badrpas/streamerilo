@@ -1,0 +1,20 @@
+version: "3"
+
+
+services:
+
+  kek:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  owncast:
+    image: owncast/owncast:latest
+    ports:
+      - '8080:8080'
+      - '1935:1935'
+    volumes:
+      - './data:/app/data'
+
+
+
