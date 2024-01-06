@@ -1,4 +1,13 @@
+data/
 
 the-thing/thingy
 **/.env
+**/.envrc
+
+twitch-user.txt
+
+*.mp4
+*.bmp*
+*.png*
+
 
