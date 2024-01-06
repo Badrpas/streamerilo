@@ -1,73 +1,87 @@
 package main
 
 import (
+	"fmt"
+	"io"
 	"log"
-	"net"
 	"os"
-	"os/signal"
-	"syscall"
-    "fmt"
+	"os/exec"
+	"time"
+	// "math/rand"
+
+	"github.com/joho/godotenv"
 )
 
-func echoServer(c net.Conn) {
+const WIDTH = 300
+const HEIGHT = 200
+
+func runFfmpeg() *exec.Cmd {
+	cmd := exec.Command(
+		"ffmpeg",
+		"-f", "rawvideo",
+		"-video_size", fmt.Sprintf("%dx%d", WIDTH, HEIGHT),
+		"-pixel_format", "rgb8",
+		"-use_wallclock_as_timestamps", "1",
+		// "-i", "unix:/tmp/go.sock",
+		"-i", "-",
+		"-c:v", "libx264",
+		"-r", "60",
+		"-f", "flv",
+		os.Getenv("TARGET_OUTPUT"),
+	)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd
+}
+
+func spam_frames(ffmpeg io.Writer) {
+	w, h := WIDTH, HEIGHT
+	buf := make([]byte, w*h)
+
+	println("Spamming now")
+
+	shift := 0
 	for {
-		w, h := (200), (100)
-		// c.Write([]byte{w, h})
-		buf := make([]byte, w*h)
+		for y := 0; y < h; y++ {
+			for x := 0; x < w; x++ {
 
-		print(len(buf))
+				if x < shift {
+					buf[x+y*w] = byte((y / 0xFF) * (h / 0xFF))
+				} else {
+					buf[x+y*w] = 0xAF
+				}
 
-		shift := byte(0)
-		println("Spamming now")
-		for {
-			counter := byte(shift)
-			for i:=0; i < int(w)*int(h); i++ {
-				buf[i] = counter
-				counter += 1
 			}
-
-			shift += 1
-			c.Write(buf)
 		}
 
-		nr, err := c.Read(buf)
-		if err != nil {
-			return
+		shift += 1
+		if shift > w {
+			shift = 0
 		}
+		ffmpeg.Write(buf)
 
-		data := buf[0:nr]
-		println("Server got size:", len(data))
+		time.Sleep(16 * time.Millisecond)
 	}
 }
 
 func main() {
-    fmt.Println("Hello, world.")
-
-	ln, err := net.Listen("unix", "/tmp/go.sock")
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Listen error: ", err)
+		log.Fatal("Error loading .env file")
 	}
 
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
-	go func(ln net.Listener, c chan os.Signal) {
-		sig := <-c
-		log.Printf("Caught signal %s: shutting down.", sig)
-		ln.Close()
-		os.Exit(0)
-	}(ln, sigc)
+	cmd := runFfmpeg()
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	println(stdin)
 
-
-	for {
-		println("Waiting for connection")
-		fd, err := ln.Accept()
-		println("Someone just got accepted!")
-		if err != nil {
-			log.Fatal("Accept error: ", err)
+	go func () {
+		if err := cmd.Run(); err != nil {
+			log.Fatal(err)
 		}
-		go echoServer(fd)
-	}
+	}()
 
+	spam_frames(stdin)
 }
-
-
