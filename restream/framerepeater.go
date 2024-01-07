@@ -19,10 +19,12 @@ func repeat_buffer() {
 	    }
 
         if clients_connected == 0 {
-            draw_rect(uint32(width / 2 + uint32(shift - max_shift / 2)), height / 2, 20, 20)
+            draw_rect(uint32(width / 2 + uint32(shift - max_shift / 2)), height / 2, 24, 24, 0, 0, 0)
+            draw_rect(uint32(width / 2 + uint32(shift - max_shift / 2)), height / 2, 20, 20, 0, 10, 0xFF)
             shift += dir
             if shift == max_shift || shift == 0 {
                 dir = -dir
+                shift += dir
             }
         }
 

@@ -83,14 +83,14 @@ func handle_req(conn net.Conn) {
 
 }
 
-func draw_rect(cx, cy, w, h uint32) {
+func draw_rect(cx, cy, w, h uint32, r, g, b byte) {
 	const S = 20
 	for y := cy - h/2; y < cy+h/2; y++ {
 		for x := cx - w/2; x < cx+w/2; x++ {
-			buffer[x+y*width+0] = 0xFF
-			buffer[x+y*width+1] = 0xFF
-			buffer[x+y*width+2] = 0xFF
-			buffer[x+y*width+3] = 0xFF
+			buffer[x*pixel_size + y*width*pixel_size + 0] = r
+			buffer[x*pixel_size + y*width*pixel_size + 1] = g
+			buffer[x*pixel_size + y*width*pixel_size + 2] = b
+			buffer[x*pixel_size + y*width*pixel_size + 3] = 0xFF
 		}
 	}
 

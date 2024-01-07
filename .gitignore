@@ -1,6 +1,7 @@
 data/
 
 the-thing/thingy
+restream/restream
 **/.env
 **/.envrc
 

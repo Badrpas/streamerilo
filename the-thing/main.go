@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"log"
+	"os"
 
 	. "thingy/frameconsumer"
 
@@ -22,7 +23,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	use_restreamer := true
+	use_restreamer := os.Getenv("USE_RESTREAMER") == "true"
 	stream_to_remote := true
 
 	var framereceiver io.Writer
