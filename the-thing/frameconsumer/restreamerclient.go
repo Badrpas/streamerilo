@@ -2,9 +2,12 @@ package frameconsumer
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
 	"log"
 	"net"
+	"strings"
+	"time"
 )
 
 
@@ -14,6 +17,11 @@ func ConnectRestreamer(width, height, pixel_size, fps uint32) io.Writer {
         log.Fatal(err)
     }
     conn, err := net.DialTCP("tcp4", nil, addr)
+    if nerr, ok := err.(*net.OpError); ok && nerr.Op == "dial" && strings.Contains(nerr.Error(), "connection refused") {
+        fmt.Printf("Restreamer Connection refused; Retrying in 1 second\n");
+        time.Sleep(time.Second)
+        conn, err = net.DialTCP("tcp4", nil, addr)
+    }
     if err!= nil {
         log.Fatal(err)
     }

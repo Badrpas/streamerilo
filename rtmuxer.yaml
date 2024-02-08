@@ -1,0 +1,10 @@
+
+Streamerilo-restream:
+  Restream:
+    cwd: ./restream
+    cmd: go run .
+
+Streamerilo-thingy:
+  Thingy:
+    cwd: ./the-thing
+    cmd: USE_RESTREAMER=true go run .
